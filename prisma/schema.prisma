@@ -1,0 +1,89 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// Roles for access control
+enum Role {
+  ADMIN
+  USER
+}
+
+// Status for a booking lifecycle
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+}
+
+model User {
+  id             String    @id @default(cuid())
+  name           String
+  email          String    @unique
+  hashedPassword String
+  role           Role      @default(USER)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  bookings       Booking[]
+}
+
+model Employee {
+  id          String    @id @default(cuid())
+  name        String    @unique
+  photoUrl    String?
+  // Comma-separated list of specialties to keep SQLite simple
+  specialties String?
+  bio         String?
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  bookings    Booking[]
+}
+
+model Service {
+  id              String    @id @default(cuid())
+  name            String    @unique
+  description     String?
+  priceCents      Int       // store prices as integer cents to avoid floating point
+  durationMinutes Int        // typical duration of the service
+  isActive        Boolean   @default(true)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  bookings        Booking[]
+}
+
+model Booking {
+  id              String   @id @default(cuid())
+  userId          String?
+  user            User?    @relation(fields: [userId], references: [id])
+  customerName    String   @default("")  // Store customer name directly
+  customerPhone   String?                // Store customer phone
+  customerAddress String?                // Store customer address
+  employeeId      String
+  employee        Employee @relation(fields: [employeeId], references: [id])
+  serviceId       String
+  service         Service  @relation(fields: [serviceId], references: [id])
+  startTime       DateTime
+  endTime         DateTime
+  status          String   @default("PENDING") // PENDING, CONFIRMED, CANCELLED, COMPLETED
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([userId])
+  @@index([employeeId])
+  @@index([serviceId])
+  @@index([startTime])
+  @@index([status])
+}
