@@ -29,7 +29,8 @@ export async function POST(req: Request) {
       data: { name, photoUrl, specialties, bio, isActive: isActive ?? true },
     });
     return NextResponse.json(created, { status: 201 });
-  } catch (e: any) {
+  } catch (error: unknown) {
+    const e = error as Error;
     return NextResponse.json({ error: e?.message ?? "Failed" }, { status: 400 });
   }
 }

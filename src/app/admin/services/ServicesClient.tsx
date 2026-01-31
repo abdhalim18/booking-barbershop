@@ -32,7 +32,8 @@ export default function ServicesClient() {
       if (!res.ok) throw new Error("Gagal memuat layanan");
       const json = await res.json();
       setData(json);
-    } catch (e: any) {
+    } catch (error: unknown) {
+      const e = error as Error;
       toast.error(e.message || "Gagal memuat layanan");
     } finally {
       setLoading(false);
@@ -78,7 +79,7 @@ export default function ServicesClient() {
     // Convert rupiah to cents
     const priceInRupiah = Number(form.priceCents);
     const priceInCents = priceInRupiah * 100;
-    
+
     const payload = {
       name: form.name.trim(),
       description: form.description.trim() || null,
@@ -130,30 +131,30 @@ export default function ServicesClient() {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <Label htmlFor="priceCents">Harga (Rp)</Label>
-                  <Input 
-                    id="priceCents" 
-                    type="number" 
-                    inputMode="numeric" 
+                  <Input
+                    id="priceCents"
+                    type="number"
+                    inputMode="numeric"
                     min="0"
                     step="1000"
-                    value={form.priceCents} 
-                    onChange={(e) => setForm({ ...form, priceCents: e.target.value })} 
+                    value={form.priceCents}
+                    onChange={(e) => setForm({ ...form, priceCents: e.target.value })}
                     placeholder="50000"
-                    required 
+                    required
                   />
                   <p className="text-xs text-gray-500 mt-1">Masukkan harga dalam rupiah</p>
                 </div>
                 <div>
                   <Label htmlFor="durationMinutes">Durasi (menit)</Label>
-                  <Input 
-                    id="durationMinutes" 
-                    type="number" 
-                    inputMode="numeric" 
+                  <Input
+                    id="durationMinutes"
+                    type="number"
+                    inputMode="numeric"
                     min="1"
-                    value={form.durationMinutes} 
-                    onChange={(e) => setForm({ ...form, durationMinutes: e.target.value })} 
+                    value={form.durationMinutes}
+                    onChange={(e) => setForm({ ...form, durationMinutes: e.target.value })}
                     placeholder="30"
-                    required 
+                    required
                   />
                 </div>
               </div>

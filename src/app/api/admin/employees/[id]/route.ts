@@ -5,13 +5,14 @@ import { prisma } from "@/lib/db";
 
 export async function PATCH(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const session = await getServerSession(authOptions);
   const role = (session?.user as unknown as { role?: string } | undefined)?.role;
   if (role !== "ADMIN") return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const id = params.id;
+
   const json = await req.json();
   const { name, photoUrl, specialties, bio, isActive } = json as {
     name?: string;
@@ -27,24 +28,26 @@ export async function PATCH(
       data: { name, photoUrl, specialties, bio, isActive },
     });
     return NextResponse.json(updated);
-  } catch (e: any) {
+  } catch (error: unknown) {
+    const e = error as Error;
     return NextResponse.json({ error: e?.message ?? "Failed" }, { status: 400 });
   }
 }
 
 export async function DELETE(
   _req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const session = await getServerSession(authOptions);
   const role = (session?.user as unknown as { role?: string } | undefined)?.role;
   if (role !== "ADMIN") return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const id = params.id;
   try {
     await prisma.employee.delete({ where: { id } });
     return NextResponse.json({ ok: true });
-  } catch (e: any) {
+  } catch (error: unknown) {
+    const e = error as Error;
     return NextResponse.json({ error: e?.message ?? "Failed" }, { status: 400 });
   }
 }

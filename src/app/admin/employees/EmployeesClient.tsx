@@ -33,7 +33,8 @@ export default function EmployeesClient() {
       if (!res.ok) throw new Error("Gagal memuat pegawai");
       const json = await res.json();
       setData(json);
-    } catch (e: any) {
+    } catch (error: unknown) {
+      const e = error as Error;
       toast.error(e.message || "Gagal memuat pegawai");
     } finally {
       setLoading(false);
