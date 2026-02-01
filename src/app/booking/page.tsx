@@ -29,15 +29,15 @@ export default function BookingPage() {
   const [available, setAvailable] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
-  
+
   const isFormValid = useMemo(() => {
-    return name.trim() !== '' && 
-           phone.trim() !== '' && 
-           address.trim() !== '' &&
-           employeeId && 
-           serviceId && 
-           date && 
-           time;
+    return name.trim() !== '' &&
+      phone.trim() !== '' &&
+      address.trim() !== '' &&
+      employeeId &&
+      serviceId &&
+      date &&
+      time;
   }, [name, phone, address, employeeId, serviceId, date, time]);
 
   useEffect(() => {
@@ -59,6 +59,16 @@ export default function BookingPage() {
 
   async function checkAvailability() {
     if (!employeeId || !serviceId || !startISO || !endISO) return;
+
+    // Operating hours check (09:00 - 21:00)
+    const startTimeDate = new Date(startISO);
+    const hour = startTimeDate.getHours();
+    if (hour < 9 || hour >= 21) {
+      setMessage("Booking hanya tersedia antara jam 09:00 s.d 21:00");
+      toast.error("Booking hanya tersedia antara jam 09:00 s.d 21:00");
+      return;
+    }
+
     setLoading(true);
     setMessage(null);
     try {
@@ -86,27 +96,27 @@ export default function BookingPage() {
       toast.message("Silakan cek ketersediaan terlebih dahulu.");
       return;
     }
-    
+
     if (!isFormValid) {
       setMessage("Mohon lengkapi semua data yang diperlukan.");
       toast.error("Mohon lengkapi semua data yang diperlukan.");
       return;
     }
-    
+
     setLoading(true);
     setMessage(null);
     try {
       const res = await fetch("/api/bookings", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          employeeId, 
-          serviceId, 
-          startTime: startISO, 
+        body: JSON.stringify({
+          employeeId,
+          serviceId,
+          startTime: startISO,
           customerName: name.trim(),
           customerPhone: phone.trim(),
           customerAddress: address.trim(),
-          notes: undefined 
+          notes: undefined
         }),
       });
       if (res.ok) {
@@ -144,7 +154,7 @@ export default function BookingPage() {
         {/* Customer Information Section */}
         <div className="space-y-4 p-4 bg-muted/40 rounded-xl">
           <h2 className="text-lg font-medium">Data Diri</h2>
-          
+
           <div className="space-y-4">
             <div>
               <Label htmlFor="name" className="block text-sm mb-1">
@@ -194,14 +204,14 @@ export default function BookingPage() {
         {/* Service Selection Section */}
         <div className="space-y-4 p-4 bg-muted/40 rounded-xl">
           <h2 className="text-lg font-medium">Pilihan Layanan</h2>
-          
+
           <div className="space-y-4">
             <div>
               <Label htmlFor="employee" className="block text-sm mb-1">
                 Pilih Pegawai <span className="text-red-500">*</span>
               </Label>
-              <Select 
-                value={employeeId} 
+              <Select
+                value={employeeId}
                 onValueChange={setEmployeeId}
                 disabled={loading}
               >
@@ -222,8 +232,8 @@ export default function BookingPage() {
               <Label htmlFor="service" className="block text-sm mb-1">
                 Pilih Layanan <span className="text-red-500">*</span>
               </Label>
-              <Select 
-                value={serviceId} 
+              <Select
+                value={serviceId}
                 onValueChange={setServiceId}
                 disabled={loading}
               >
@@ -245,34 +255,34 @@ export default function BookingPage() {
         {/* Date & Time Selection */}
         <div className="space-y-4 p-4 bg-muted/40 rounded-xl">
           <h2 className="text-lg font-medium">Waktu Booking</h2>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <Label htmlFor="date" className="block text-sm mb-1">
                 Tanggal <span className="text-red-500">*</span>
               </Label>
-              <Input 
-                id="date" 
-                type="date" 
-                value={date} 
+              <Input
+                id="date"
+                type="date"
+                value={date}
                 onChange={e => setDate(e.target.value)}
                 min={new Date().toISOString().split('T')[0]}
                 required
                 disabled={loading}
               />
             </div>
-            
+
             <div>
               <Label htmlFor="time" className="block text-sm mb-1">
                 Waktu <span className="text-red-500">*</span>
               </Label>
-              <Input 
-                id="time" 
-                type="time" 
-                value={time} 
-                onChange={e => setTime(e.target.value)} 
-                min="08:00"
-                max="17:00"
+              <Input
+                id="time"
+                type="time"
+                value={time}
+                onChange={e => setTime(e.target.value)}
+                min="09:00"
+                max="21:00"
                 step="900"
                 required
                 disabled={loading}
@@ -284,14 +294,14 @@ export default function BookingPage() {
           </div>
 
           <div className="flex items-center gap-2 pt-2">
-            <Button 
+            <Button
               onClick={checkAvailability}
               disabled={loading || !employeeId || !serviceId || !date || !time}
               className="mt-2"
             >
               {loading ? 'Memeriksa...' : 'Cek Ketersediaan'}
             </Button>
-            
+
             {available === true && (
               <span className="text-green-600 text-sm flex items-center">
                 <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -313,25 +323,24 @@ export default function BookingPage() {
 
         {/* Submit Button */}
         <div className="space-y-4 pt-2">
-          <Button 
-            onClick={submitBooking} 
+          <Button
+            onClick={submitBooking}
             disabled={loading || available !== true || !isFormValid}
             className="w-full py-6 text-lg"
             size="lg"
           >
             {loading ? 'Memproses...' : 'Konfirmasi Booking'}
           </Button>
-          
+
           {!isFormValid && available === true && (
             <p className="text-sm text-amber-600 text-center">
               Mohon lengkapi semua data yang bertanda <span className="text-red-500">*</span>
             </p>
           )}
-          
+
           {message && (
-            <div className={`text-sm text-center p-3 rounded ${
-              message.includes('berhasil') ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-            }`}>
+            <div className={`text-sm text-center p-3 rounded ${message.includes('berhasil') ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+              }`}>
               {message}
             </div>
           )}

@@ -21,15 +21,15 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
     }
 
-    const { 
-      userId, 
-      employeeId, 
-      serviceId, 
-      startTime, 
-      customerName, 
-      customerPhone, 
-      customerAddress, 
-      notes 
+    const {
+      userId,
+      employeeId,
+      serviceId,
+      startTime,
+      customerName,
+      customerPhone,
+      customerAddress,
+      notes
     } = parsed.data;
 
     const service = await prisma.service.findUnique({ where: { id: serviceId } });
@@ -39,6 +39,22 @@ export async function POST(req: Request) {
 
     const start = new Date(startTime);
     const end = new Date(start.getTime() + service.durationMinutes * 60000);
+
+    const startHour = start.getHours();
+    const endHour = end.getHours();
+    const endMinutes = end.getMinutes();
+
+    // Opening hours: 09:00 - 21:00
+    // Check start time (must be >= 09:00 and < 21:00)
+    if (startHour < 9 || startHour >= 21) {
+      return NextResponse.json({ error: "Booking must be between 09:00 and 21:00" }, { status: 400 });
+    }
+
+    // Check end time (must be <= 21:00)
+    // If endHour is 21, minutes must be 0
+    if (endHour > 21 || (endHour === 21 && endMinutes > 0)) {
+      return NextResponse.json({ error: "Booking must finish by 21:00" }, { status: 400 });
+    }
 
     // Check overlap
     const overlap = await prisma.booking.findFirst({

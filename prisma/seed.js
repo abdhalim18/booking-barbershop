@@ -1,4 +1,4 @@
-const { PrismaClient } = require('@prisma/client');
+const { PrismaClient } = require('../src/generated/prisma');
 const prisma = new PrismaClient();
 
 async function main() {
@@ -16,8 +16,6 @@ async function main() {
     prisma.employee.create({
       data: {
         name: 'Andi',
-        email: 'andi@example.com',
-        phone: '081234567890',
         isActive: true,
         specialties: 'Potong Rambut, Pangkas Jenggot',
       },
@@ -25,8 +23,6 @@ async function main() {
     prisma.employee.create({
       data: {
         name: 'Budi',
-        email: 'budi@example.com',
-        phone: '081234567891',
         isActive: true,
         specialties: 'Potong Rambut, Creambath',
       },
@@ -34,8 +30,6 @@ async function main() {
     prisma.employee.create({
       data: {
         name: 'Citra',
-        email: 'citra@example.com',
-        phone: '081234567892',
         isActive: true,
         specialties: 'Potong Rambut Wanita, Hair Spa',
       },
@@ -87,7 +81,7 @@ async function main() {
     data: {
       email: 'admin@example.com',
       name: 'Admin',
-      password: '$2a$10$7x4L0Z6X7YJx1X8XvLxXUeQ8QK9zX5ZxX5Lx5Xx5Xx5Xx5Xx5Xx5Xx', // password: admin123
+      hashedPassword: '$2a$10$7x4L0Z6X7YJx1X8XvLxXUeQ8QK9zX5ZxX5Lx5Xx5Xx5Xx5Xx5Xx5Xx', // password: admin123
       role: 'ADMIN',
     },
   });

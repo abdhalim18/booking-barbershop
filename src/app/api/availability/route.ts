@@ -9,6 +9,16 @@ export async function POST(req: Request) {
     }
     const start = new Date(startTime);
     const end = new Date(endTime);
+
+    // Opening hours check
+    const startHour = start.getHours();
+    const endHour = end.getHours();
+    const endMinutes = end.getMinutes();
+
+    if (startHour < 9 || startHour >= 21 || endHour > 21 || (endHour === 21 && endMinutes > 0)) {
+      return NextResponse.json({ available: false, reason: "Outside operating hours" });
+    }
+
     const bufferMinutes = 60;
     const startWithBuffer = new Date(start.getTime() - bufferMinutes * 60000);
 
