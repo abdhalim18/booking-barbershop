@@ -41,8 +41,21 @@ export default function BookingPage() {
   }, [name, phone, address, employeeId, serviceId, date, time]);
 
   useEffect(() => {
-    fetch("/api/employees").then(r => r.json()).then(setEmployees);
-    fetch("/api/services").then(r => r.json()).then(setServices);
+    fetch("/api/employees")
+      .then(r => r.json())
+      .then(data => {
+        if (Array.isArray(data)) setEmployees(data);
+        else console.error("Employees API error:", data);
+      })
+      .catch(console.error);
+
+    fetch("/api/services")
+      .then(r => r.json())
+      .then(data => {
+        if (Array.isArray(data)) setServices(data);
+        else console.error("Services API error:", data);
+      })
+      .catch(console.error);
   }, []);
 
   const startISO = useMemo(() => {
