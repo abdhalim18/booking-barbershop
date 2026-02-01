@@ -1,6 +1,42 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 
+// GET: Fetch booked slots for a specific date and employee
+export async function GET(req: Request) {
+  try {
+    const { searchParams } = new URL(req.url);
+    const employeeId = searchParams.get("employeeId");
+    const date = searchParams.get("date"); // YYYY-MM-DD
+
+    if (!employeeId || !date) {
+      return NextResponse.json({ error: "Missing employeeId or date" }, { status: 400 });
+    }
+
+    const startOfDay = new Date(`${date}T00:00:00`);
+    const endOfDay = new Date(`${date}T23:59:59`);
+
+    const bookings = await prisma.booking.findMany({
+      where: {
+        employeeId,
+        status: { not: "CANCELLED" },
+        startTime: {
+          gte: startOfDay,
+          lte: endOfDay,
+        },
+      },
+      select: {
+        startTime: true,
+        endTime: true,
+      },
+    });
+
+    return NextResponse.json(bookings);
+  } catch (e) {
+    console.error(e);
+    return NextResponse.json({ error: "Failed to fetch slots" }, { status: 500 });
+  }
+}
+
 export async function POST(req: Request) {
   try {
     const { employeeId, startTime, endTime } = await req.json();
